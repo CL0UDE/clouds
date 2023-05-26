@@ -1,0 +1,92 @@
+import random
+import tkinter as tk
+import matplotlib.pyplot as plt
+
+
+class User:
+    def __init__(self, id, name, online_status):
+        self.id = id
+        self.name = name
+        self.online_status = online_status
+        self.applications = {}
+        self.bandwidth_assigned = 0
+        
+    def add_application(self, name, bandwidth):
+        self.applications[name] = bandwidth
+        
+    def remove_application(self, name):
+        if name in self.applications:
+            del self.applications[name]
+        
+    def is_online(self):
+        return self.online_status
+        
+class BandwidthAllocator:
+    def __init__(self, users):
+        self.users = users
+        self.total_bandwidth = 1000
+        
+    def calculate_current_bandwidth_usage(self):
+        current_bandwidth_usage = 0
+        for user in self.users:
+            if user.is_online():
+                for app, bandwidth in user.applications.items():
+                    current_bandwidth_usage += bandwidth
+        return current_bandwidth_usage
+    
+    def allocate_bandwidth(self):
+        current_bandwidth_usage = self.calculate_current_bandwidth_usage()
+        available_bandwidth = self.total_bandwidth - current_bandwidth_usage
+        print(f"Total Bandwidth: {self.total_bandwidth}")
+        print(f"Current Bandwidth Usage: {current_bandwidth_usage}")
+        print(f"Available Bandwidth: {available_bandwidth}")
+        for user in self.users:
+            if user.is_online():
+                user_bandwidth = 0
+                for app, bandwidth in user.applications.items():
+                    if available_bandwidth > 0:
+                        app_bandwidth = min(available_bandwidth, bandwidth)
+                        user_bandwidth += app_bandwidth
+                        available_bandwidth -= app_bandwidth
+                        print(f"{user.name} is assigned {app_bandwidth} bandwidth for {app}")
+                        user.applications[app] = app_bandwidth
+                user.bandwidth_assigned = user_bandwidth
+            else:
+                user.bandwidth_assigned = 0
+                print(f"{user.name} is offline and no bandwidth is assigned")
+        self.plot_graph()
+
+    def plot_graph(self):
+        fig, ax = plt.subplots()
+        app_names = []
+        app_bandwidths = []
+        for user in self.users:
+            if user.is_online():
+                for app, bandwidth in user.applications.items():
+                    app_names.append(f"{user.name}-{app}")
+                    app_bandwidths.append(bandwidth)
+        ax.bar(app_names, app_bandwidths)
+        ax.set_xlabel('Applications')
+        ax.set_ylabel('Bandwidth Assigned')
+        ax.set_title('Bandwidth Allocation')
+        plt.show()
+
+if __name__ == '__main__':
+    users = [User(1, 'USER 1', True), User(2, 'USER 2', True), User(3, 'USER 3', True),User(4, 'USER 4', True),User(5, 'USER 5', True),User(6, 'USER 6', True),User(7, 'USER 7', True),User(8, 'USER 8', True),User(9, 'USER 9', True),User(10, 'USER 10', True)]
+    users[0].add_application('Youtube', random.randint(1, 30))
+    users[0].add_application('Spotify', random.randint(1, 20))
+    users[1].add_application('Whatsapp', random.randint(1, 10))
+    users[1].add_application('Snapchat', random.randint(1, 5))
+    users[2].add_application('Chrome', random.randint(1, 50))
+    users[3].add_application('Insta', random.randint(1, 5))
+    users[4].add_application('Facebook', random.randint(1, 5))
+    users[4].add_application('MyCamu', random.randint(1, 10))
+    users[5].add_application('Brave', random.randint(1, 50))
+    users[6].add_application('Chess', random.randint(1, 20))
+    users[7].add_application('Valorant', random.randint(1, 100))
+    users[8].add_application('Call Of Duty', random.randint(1, 100))
+    users[9].add_application('Insta', random.randint(1, 15))
+    bandwidth_allocator = BandwidthAllocator(users)
+    bandwidth_allocator.allocate_bandwidth()
+    for user in users:
+        print(f"{user.name} has been assigned {user.bandwidth_assigned} bandwidth")
